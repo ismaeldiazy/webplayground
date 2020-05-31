@@ -5,4 +5,10 @@ from .models import Page
 class PageAdmin(admin.ModelAdmin):
     list_display = ('title', 'order')
 
+    # Inject custom css for admin panel
+    class Media:
+        css = {
+            'all': ('pages/css/custom_ckeditor.css',)
+        }
+
 admin.site.register(Page, PageAdmin)
