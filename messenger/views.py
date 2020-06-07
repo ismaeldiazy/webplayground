@@ -3,7 +3,7 @@ from .models import Thread
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic import TemplateView
-from django.http import Http404
+from django.http import Http404, JsonResponse
 
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -22,3 +22,9 @@ class ThreadDetail(DetailView):
         if self.request.user not in obj.users.all():
             raise Http404()
         return obj
+
+def add_message(request, pk):
+    print(request.GET)
+    json_response = {'created':False}
+    # Convert python dic to Json obj
+    return JsonResponse(json_response)

@@ -59,6 +59,17 @@
               {% endfor %}
             </div>
             <!-- Aquí crearemos el formulario -->
+            <button id="testBtn" class="btn btn-primary">Test Async Request</button>
+            <script>
+              let testBtn = document.getElementById("testBtn");
+              testBtn.addEventListener("click", () => {
+                let content = "Esto es una prueba";
+                const url = "{% url 'messenger:add' thread.pk %}" + "?content="+ content;
+                fetch(url).then(response => response.json()).then( (data) => {
+                  alert(data.created);
+                })
+              });
+            </script>
           </div>
         </div>
     </div>
