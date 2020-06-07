@@ -11,9 +11,26 @@ class Message(models.Model):
     class Meta:
         ordering = ['created']
 
+class ThreadManager(models.Manager):
+    def find(self, user1, user2):
+        queryset = self.filter(users=user1).filter(users=user2)
+        if len(queryset) > 0:
+            return queryset[0]
+        return None
+    
+    def find_or_create(self, user1, user2):
+        thread = self.find(user1, user2)
+        if thread is None:
+            thread = Thread.objects.create()
+            thread.users.add(user1, user2)
+        return thread
+
+
 class Thread(models.Model):
     users = models.ManyToManyField(User, related_name='threads')
     messages = models.ManyToManyField(Message)
+
+    objects = ThreadManager()
 
 def messages_changed(sender, **kwargs):
     instance = kwargs.pop("instance", None)
@@ -30,7 +47,7 @@ def messages_changed(sender, **kwargs):
                 # We store here fraudulent messages
                 false_pk_set.add(msg_pk)
     
-    # Look for the msgs in false_pk_set that are also in pk_set and delete them
+    # With difference_update method() we remove the unwanted items from the orginal set
     pk_set.difference_update(false_pk_set)
 
 
