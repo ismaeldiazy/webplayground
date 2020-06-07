@@ -40,8 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'ckeditor',
     'core',
-    'profiles',
     'pages.apps.PagesConfig',
+    'profiles',
+    'messenger',
 ]
 
 MIDDLEWARE = [
