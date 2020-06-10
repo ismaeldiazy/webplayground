@@ -42,33 +42,72 @@
           </div>
           <!-- Hilo de conversación -->
           <div class="col-md-8">
-            <!-- Recorremos los miembros del hilo menos el propio request.user -->
-            {% for user in thread.users.all %}
-              {% if user != request.user %}       
-                <h4 class="mb-4">Mensajes con <a href="{% url 'profiles:detail' user %} ">{{user}}</a></h4>
-              {% endif %}
-            {% endfor %}
-            <!-- Mostramos los mensajes en una capa que tiene un overflow vertical de 300 píxeles -->
-            <div class="thread" id="thread">
-              {% for message in object.messages.all %}
-                <!-- Dependiendo del usuario asignamos una clase con un color de fondo u otro en el mensaje -->
-                <div {% if request.user == message.user %}class="mine mb-3"{% else %}class="other mb-3"{% endif %}>
+          <!-- Recorremos los miembros del hilo menos el propio request.user -->
+          {% for user in thread.users.all %}
+            {% if user != request.user %}       
+              <h4 class="mb-4">Mensajes con <a href="{% url 'profiles:detail' user %} ">{{user}}</a></h4>
+            {% endif %}
+          {% endfor %}
+          <!-- Mostramos los mensajes en una capa que tiene un overflow vertical de 300 píxeles -->
+          <div class="thread" id="thread">
+            {% for message in object.messages.all %}
+              <!-- Dependiendo del usuario asignamos una clase con un color de fondo u otro en el mensaje -->
+              <div {% if request.user == message.user %}class="mine mb-3"{% else %}class="other mb-3"{% endif %}>
                   <small><i>Hace {{thread.messages.last.created|timesince}}</i></small><br>
                   {{message.content}}
                 </div>
               {% endfor %}
             </div>
             <!-- Aquí crearemos el formulario -->
-            <button id="testBtn" class="btn btn-primary">Test Async Request</button>
+            <textarea id="content" class="form-control mb-2" rows="2" placeholder="Escribe tu mensaje aquí"></textarea>
+            <button id="send" class="btn btn-primary btn-sm btn-block" disabled>Enviar mensaje</button>
             <script>
-              let testBtn = document.getElementById("testBtn");
-              testBtn.addEventListener("click", () => {
-                let content = "Esto es una prueba";
-                const url = "{% url 'messenger:add' thread.pk %}" + "?content="+ content;
-                fetch(url).then(response => response.json()).then( (data) => {
-                  alert(data.created);
-                })
-              });
+              const send = document.getElementById("send");
+              const thread = document.getElementById("thread");
+
+              send.addEventListener("click", () => {
+                // Encode the content to send it
+                let content = encodeURIComponent(document.getElementById("content").value);
+                if(content.length > 0) {
+                  // Reset input
+                  document.getElementById("content").value = '';
+                  // Disable button after sending msg
+                  send.disabled = true;
+                  const url = "{% url 'messenger:add' thread.pk %}" + "?content="+ content;
+                  // Fetch doesn't include by default the session credentials, it has to be added by
+                  // {'credentials':'include'}
+                  fetch(url, {'credentials':'include'}).then(response => response.json()).then( data => {
+                    // If the message has been created correctly
+                    if (data.created) {
+                      let message = document.createElement('div');
+                      message.classList.add('mine', 'mb-3');
+                      // Decode the content to insert into the HTML
+                      message.innerHTML = ` <small><i>Hace unos segundos</i></small><br>${decodeURIComponent(content)}`;
+                      thread.appendChild(message);
+                      // Scroll to the bottom
+                      scrollBottomInThread();
+                    }
+                  })
+                }
+              })
+
+              // Event that disable or enable the button if there's text
+              const content = document.getElementById("content");
+              content.addEventListener("keyup", function() {
+                if (!this.checkValidity() || !this.value) {
+                  send.disabled = true;
+                }else {
+                  send.disabled = false;
+                }
+              })
+
+              // Force scroll down
+              function scrollBottomInThread(){
+                let thread = document.getElementById("thread");
+                thread.scrollTop = thread.scrollHeight;
+              }
+              
+              scrollBottomInThread();
             </script>
           </div>
         </div>
