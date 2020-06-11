@@ -86,6 +86,10 @@
                       thread.appendChild(message);
                       // Scroll to the bottom
                       scrollBottomInThread();
+                      // If it's the first message of the thread, it will be displayed on the left (the thread)
+                      if (data.first) {
+                        window.location.href = "{% url 'messenger:detail' thread.pk %}"
+                      }
                     }
                   })
                 }
