@@ -23,14 +23,18 @@ class ThreadManager(models.Manager):
         if thread is None:
             thread = Thread.objects.create()
             thread.users.add(user1, user2)
-        return thread
+        return thread 
 
 
 class Thread(models.Model):
     users = models.ManyToManyField(User, related_name='threads')
     messages = models.ManyToManyField(Message)
+    updated = models.DateTimeField(auto_now=True)
 
     objects = ThreadManager()
+
+    class Meta:
+        ordering = ['-updated']
 
 def messages_changed(sender, **kwargs):
     instance = kwargs.pop("instance", None)
@@ -50,6 +54,8 @@ def messages_changed(sender, **kwargs):
     # With difference_update method() we remove the unwanted items from the orginal set
     pk_set.difference_update(false_pk_set)
 
+    # Force update field (to order the instances) doing save
+    instance.save()
 
 
 
